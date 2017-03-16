@@ -1,0 +1,21 @@
+{
+  "name": "zkeleton-css",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prebuild:example": "mkdir -p dist && cp example/index.html dist/",
+    "build:example": "monobrow -c example/monobrow.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "joshwnj",
+  "license": "MIT",
+  "dependencies": {
+    "cmz": "^2.2.1",
+    "object-to-css": "^1.0.0"
+  },
+  "devDependencies": {
+    "monobrow": "^2.6.2"
+  }
+}
