@@ -1,12 +1,13 @@
 {
-  "name": "zkeleton-css",
+  "name": "zkeleton",
   "version": "1.0.0",
   "description": "cmz style library, based on skeleton",
   "main": "index.js",
   "scripts": {
     "prebuild:example": "mkdir -p dist && cp example/index.html dist/",
     "build:example": "monobrow -c example/monobrow.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run build:example",
+    "gh-pages": "npm run build:example && gh-pages -d dist -m \"Updates --skip-ci\""
   },
   "keywords": [],
   "author": "joshwnj",
@@ -15,6 +16,7 @@
     "cmz": "^2.2.1"
   },
   "devDependencies": {
+    "gh-pages": "^0.12.0",
     "monobrow": "^2.6.2"
   }
 }

@@ -9,3 +9,5 @@ npm install
 npm run build:example
 open dist/index.html
 ```
+
+![](https://github.com/joshwnj/zkeleton/blob/master//example.png)
