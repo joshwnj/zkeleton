@@ -1,7 +1,7 @@
 {
   "name": "zkeleton-css",
   "version": "1.0.0",
-  "description": "",
+  "description": "cmz style library, based on skeleton",
   "main": "index.js",
   "scripts": {
     "prebuild:example": "mkdir -p dist && cp example/index.html dist/",
@@ -12,8 +12,7 @@
   "author": "joshwnj",
   "license": "MIT",
   "dependencies": {
-    "cmz": "^2.2.1",
-    "object-to-css": "^1.0.0"
+    "cmz": "^2.2.1"
   },
   "devDependencies": {
     "monobrow": "^2.6.2"
