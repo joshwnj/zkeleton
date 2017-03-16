@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "gh-pages": "^0.12.0",
+    "hyperscript": "^2.0.2",
     "monobrow": "^2.6.2"
   }
 }

@@ -136,6 +136,7 @@ const Forms = cmz('Forms', {
 
   input: `
 & {
+  font-size: 12px;
   height: 38px;
   padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
   background-color: ${colors.white};
