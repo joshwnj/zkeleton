@@ -10,4 +10,6 @@ npm run build:example
 open dist/index.html
 ```
 
-![](https://github.com/joshwnj/zkeleton/blob/master//example.png)
+![](https://github.com/joshwnj/zkeleton/blob/master/example.png)
+
+You can also [view the example here](https://joshwnj.github.io/zkeleton/)
