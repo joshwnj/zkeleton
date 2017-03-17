@@ -13,7 +13,7 @@
   "author": "joshwnj",
   "license": "MIT",
   "dependencies": {
-    "cmz": "^2.2.1"
+    "cmz": "^2.4.0"
   },
   "devDependencies": {
     "gh-pages": "^0.12.0",

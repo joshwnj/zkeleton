@@ -28,7 +28,7 @@ const {
   Input,
   Select,
   Textarea
-} = wrap(mod._atoms, {
+} = wrap(mod.getAtoms(), {
   Form: 'form',
   Label: 'label',
   Input: 'input',
