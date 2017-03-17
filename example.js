@@ -26,6 +26,10 @@ function CmzMod (prefix, raw) {
   if (raw) { this.add(raw) }
 }
 
+CmzMod.prototype.getAtoms = function () {
+  return this._atoms
+}
+
 CmzMod.prototype.add = function (raw) {
   const self = this
   Object.keys(raw).forEach(function (k) {
@@ -219,7 +223,7 @@ const {
   Input,
   Select,
   Textarea
-} = wrap(mod._atoms, {
+} = wrap(mod.getAtoms(), {
   Form: 'form',
   Label: 'label',
   Input: 'input',
@@ -287,7 +291,7 @@ function Heading (level, attr, children) {
   return h(tag, { className: z.Typo[tag] }, attr, children)
 }
 
-},{"../src/custom":12,"cmz":1,"hyperscript":9}],5:[function(require,module,exports){
+},{"../src/custom":15,"cmz":9,"hyperscript":12}],5:[function(require,module,exports){
 require('./example-hx')
 
 },{"./example-hx":4}],6:[function(require,module,exports){
@@ -501,7 +505,13 @@ function isTruthy(value) {
     return !!value
 }
 
-},{"indexof":10}],9:[function(require,module,exports){
+},{"indexof":13}],9:[function(require,module,exports){
+arguments[4][1][0].apply(exports,arguments)
+},{"./lib/create-name":10,"./lib/upsert-css":11,"dup":1}],10:[function(require,module,exports){
+arguments[4][2][0].apply(exports,arguments)
+},{"dup":2}],11:[function(require,module,exports){
+arguments[4][3][0].apply(exports,arguments)
+},{"dup":3}],12:[function(require,module,exports){
 var split = require('browser-split')
 var ClassList = require('class-list')
 
@@ -663,7 +673,7 @@ function isArray (arr) {
 
 
 
-},{"browser-split":7,"class-list":8,"html-element":6}],10:[function(require,module,exports){
+},{"browser-split":7,"class-list":8,"html-element":6}],13:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -674,7 +684,7 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
-},{}],11:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 function wrap (raw) {
   if (raw.indexOf('&') >= 0) { return raw }
   return '& { ' + raw + ' }'
@@ -687,7 +697,7 @@ module.exports = function (size, css) {
 }`
 }
 
-},{}],12:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 // css based on https://github.com/dhg/Skeleton/
 
 const cmz = require('cmz')
@@ -949,4 +959,4 @@ module.exports = function (colors) {
   }
 }
 
-},{"./at-media":11,"cmz":1}]},{},[5]);
+},{"./at-media":14,"cmz":1}]},{},[5]);
