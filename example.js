@@ -189,52 +189,511 @@ module.exports = function upsertCss (id, css) {
 }
 
 },{}],4:[function(require,module,exports){
-const zkeleton = require('../src')
-const Typo = zkeleton.Typo
-const Buttons = zkeleton.Buttons
-const Forms = zkeleton.Forms
-const Layout = zkeleton.Layout
+// example: binding classnames to an element
+const cmz = require('cmz')
+const h = require('hyperscript')
+const z = require('../src/custom')({
+  highlight1: 'pink',
+  highlight2: 'hotpink'
+})
+
+// first we define a module from zkeleton atoms
+const mod = cmz('Zkeleton-Example', {
+  Root: [ z.Layout.container ],
+  Row: [ z.Layout.row ],
+
+  Form: [ z.Forms.root ],
+  Label: [ z.Forms.label ],
+  Input: [ z.Forms.input, z.Layout.fullWidth ],
+  Select: [ z.Forms.input, z.Layout.fullWidth ],
+  Textarea: [ z.Forms.input, z.Layout.fullWidth ]
+})
+
+// next we'll bind the classnames to the elements
+const {
+  Root,
+  Row,
+
+  Form,
+  Label,
+  Input,
+  Select,
+  Textarea
+} = wrap(mod._atoms, {
+  Form: 'form',
+  Label: 'label',
+  Input: 'input',
+  Select: 'select',
+  Textarea: 'textarea'
+})
 
 const el = document.getElementById('root')
 
-el.innerHTML = `
-<div class="${Layout.container}">
-  <h1 class="${Typo.h1}">Heading 1</h1>
-  <h2 class="${Typo.h2}">Heading 2</h2>
-  <h3 class="${Typo.h3}">Heading 3</h3>
+el.innerHTML = Root([
+  // we can also create functions that produce families of elements
+  Heading(1, 'Heading 1'),
+  Heading(2, 'Heading 2'),
+  Heading(3, 'Heading 3'),
 
-  <button class="${Buttons.normal}">Normal button</button>
-  <button class="${Buttons.primary}">Primary button</button>
+  Button('Normal button'),
+  ' ',
+  Button({ primary: true }, 'Primary button'),
 
-  <form class="${Forms.root}">
-    <div class="${Layout.row}">
-      <div class="${Layout.col6}">
-        <label class="${Forms.label}">Your email</label>
-        <input class="${Forms.input} ${Layout.fullWidth}" type="email" placeholder="text@example.com">
-      </div>
+  Form([
+    Row([
+      Col(6, [
+        Label('Your email'),
+        Input({
+          type: 'email',
+          placeholder: 'text@example.com'
+        })
+      ]),
+      Col(6, [
+        Label('Reason for contacting'),
+        Select([
+          h('option', 'Questions')
+        ])
+      ])
+    ]),
 
-      <div class="${Layout.col6}">
-        <label class="${Forms.label}">Reason for contacting</label>
-        <select class="${Forms.input} ${Layout.fullWidth}">
-          <option>Questions</option>
-        </select>
-      </div>
-    </div>
+    Label('Message'),
+    Textarea({ placeholder: 'Hi Dave...' }),
 
-    <label class="${Forms.label}">Message</label>
-    <textarea class="${Forms.input} ${Layout.fullWidth}" placeholder="Hi Dave..."></textarea>
+    Button({ primary: true }, 'Submit')
+  ])
+]).outerHTML
 
-    <button class="${Buttons.primary}">Submit</button>
-  </form>
-</div>
-`
+// ----
 
-},{"../src":5}],5:[function(require,module,exports){
+function wrap (atoms, tags={}) {
+  const output = {}
+  Object.keys(atoms).forEach(k => {
+    output[k] = h.bind(null, tags[k] || 'div', { className: atoms[k].toString() })
+  })
+  return output
+}
+
+function Col (num, attr, children) {
+  return h('div', { className: z.Layout['col' + num] }, attr, children)
+}
+
+function Button (attr, children) {
+  const className = z.Buttons[(attr.primary) ? 'primary' : 'normal']
+  return h('button', { className }, attr, children)
+}
+
+function Heading (level, attr, children) {
+  const tag = 'h' + level
+  return h(tag, { className: z.Typo[tag] }, attr, children)
+}
+
+},{"../src/custom":12,"cmz":1,"hyperscript":9}],5:[function(require,module,exports){
+require('./example-hx')
+
+},{"./example-hx":4}],6:[function(require,module,exports){
+
+},{}],7:[function(require,module,exports){
+/*!
+ * Cross-Browser Split 1.1.1
+ * Copyright 2007-2012 Steven Levithan <stevenlevithan.com>
+ * Available under the MIT License
+ * ECMAScript compliant, uniform cross-browser split method
+ */
+
+/**
+ * Splits a string into an array of strings using a regex or string separator. Matches of the
+ * separator are not included in the result array. However, if `separator` is a regex that contains
+ * capturing groups, backreferences are spliced into the result each time `separator` is matched.
+ * Fixes browser bugs compared to the native `String.prototype.split` and can be used reliably
+ * cross-browser.
+ * @param {String} str String to split.
+ * @param {RegExp|String} separator Regex or string to use for separating the string.
+ * @param {Number} [limit] Maximum number of items to include in the result array.
+ * @returns {Array} Array of substrings.
+ * @example
+ *
+ * // Basic use
+ * split('a b c d', ' ');
+ * // -> ['a', 'b', 'c', 'd']
+ *
+ * // With limit
+ * split('a b c d', ' ', 2);
+ * // -> ['a', 'b']
+ *
+ * // Backreferences in result array
+ * split('..word1 word2..', /([a-z]+)(\d+)/i);
+ * // -> ['..', 'word', '1', ' ', 'word', '2', '..']
+ */
+module.exports = (function split(undef) {
+
+  var nativeSplit = String.prototype.split,
+    compliantExecNpcg = /()??/.exec("")[1] === undef,
+    // NPCG: nonparticipating capturing group
+    self;
+
+  self = function(str, separator, limit) {
+    // If `separator` is not a regex, use `nativeSplit`
+    if (Object.prototype.toString.call(separator) !== "[object RegExp]") {
+      return nativeSplit.call(str, separator, limit);
+    }
+    var output = [],
+      flags = (separator.ignoreCase ? "i" : "") + (separator.multiline ? "m" : "") + (separator.extended ? "x" : "") + // Proposed for ES6
+      (separator.sticky ? "y" : ""),
+      // Firefox 3+
+      lastLastIndex = 0,
+      // Make `global` and avoid `lastIndex` issues by working with a copy
+      separator = new RegExp(separator.source, flags + "g"),
+      separator2, match, lastIndex, lastLength;
+    str += ""; // Type-convert
+    if (!compliantExecNpcg) {
+      // Doesn't need flags gy, but they don't hurt
+      separator2 = new RegExp("^" + separator.source + "$(?!\\s)", flags);
+    }
+    /* Values for `limit`, per the spec:
+     * If undefined: 4294967295 // Math.pow(2, 32) - 1
+     * If 0, Infinity, or NaN: 0
+     * If positive number: limit = Math.floor(limit); if (limit > 4294967295) limit -= 4294967296;
+     * If negative number: 4294967296 - Math.floor(Math.abs(limit))
+     * If other: Type-convert, then use the above rules
+     */
+    limit = limit === undef ? -1 >>> 0 : // Math.pow(2, 32) - 1
+    limit >>> 0; // ToUint32(limit)
+    while (match = separator.exec(str)) {
+      // `separator.lastIndex` is not reliable cross-browser
+      lastIndex = match.index + match[0].length;
+      if (lastIndex > lastLastIndex) {
+        output.push(str.slice(lastLastIndex, match.index));
+        // Fix browsers whose `exec` methods don't consistently return `undefined` for
+        // nonparticipating capturing groups
+        if (!compliantExecNpcg && match.length > 1) {
+          match[0].replace(separator2, function() {
+            for (var i = 1; i < arguments.length - 2; i++) {
+              if (arguments[i] === undef) {
+                match[i] = undef;
+              }
+            }
+          });
+        }
+        if (match.length > 1 && match.index < str.length) {
+          Array.prototype.push.apply(output, match.slice(1));
+        }
+        lastLength = match[0].length;
+        lastLastIndex = lastIndex;
+        if (output.length >= limit) {
+          break;
+        }
+      }
+      if (separator.lastIndex === match.index) {
+        separator.lastIndex++; // Avoid an infinite loop
+      }
+    }
+    if (lastLastIndex === str.length) {
+      if (lastLength || !separator.test("")) {
+        output.push("");
+      }
+    } else {
+      output.push(str.slice(lastLastIndex));
+    }
+    return output.length > limit ? output.slice(0, limit) : output;
+  };
+
+  return self;
+})();
+
+},{}],8:[function(require,module,exports){
+// contains, add, remove, toggle
+var indexof = require('indexof')
+
+module.exports = ClassList
+
+function ClassList(elem) {
+    var cl = elem.classList
+
+    if (cl) {
+        return cl
+    }
+
+    var classList = {
+        add: add
+        , remove: remove
+        , contains: contains
+        , toggle: toggle
+        , toString: $toString
+        , length: 0
+        , item: item
+    }
+
+    return classList
+
+    function add(token) {
+        var list = getTokens()
+        if (indexof(list, token) > -1) {
+            return
+        }
+        list.push(token)
+        setTokens(list)
+    }
+
+    function remove(token) {
+        var list = getTokens()
+            , index = indexof(list, token)
+
+        if (index === -1) {
+            return
+        }
+
+        list.splice(index, 1)
+        setTokens(list)
+    }
+
+    function contains(token) {
+        return indexof(getTokens(), token) > -1
+    }
+
+    function toggle(token) {
+        if (contains(token)) {
+            remove(token)
+            return false
+        } else {
+            add(token)
+            return true
+        }
+    }
+
+    function $toString() {
+        return elem.className
+    }
+
+    function item(index) {
+        var tokens = getTokens()
+        return tokens[index] || null
+    }
+
+    function getTokens() {
+        var className = elem.className
+
+        return filter(className.split(" "), isTruthy)
+    }
+
+    function setTokens(list) {
+        var length = list.length
+
+        elem.className = list.join(" ")
+        classList.length = length
+
+        for (var i = 0; i < list.length; i++) {
+            classList[i] = list[i]
+        }
+
+        delete list[length]
+    }
+}
+
+function filter (arr, fn) {
+    var ret = []
+    for (var i = 0; i < arr.length; i++) {
+        if (fn(arr[i])) ret.push(arr[i])
+    }
+    return ret
+}
+
+function isTruthy(value) {
+    return !!value
+}
+
+},{"indexof":10}],9:[function(require,module,exports){
+var split = require('browser-split')
+var ClassList = require('class-list')
+
+var w = typeof window === 'undefined' ? require('html-element') : window
+var document = w.document
+var Text = w.Text
+
+function context () {
+
+  var cleanupFuncs = []
+
+  function h() {
+    var args = [].slice.call(arguments), e = null
+    function item (l) {
+      var r
+      function parseClass (string) {
+        // Our minimal parser doesn’t understand escaping CSS special
+        // characters like `#`. Don’t use them. More reading:
+        // https://mathiasbynens.be/notes/css-escapes .
+
+        var m = split(string, /([\.#]?[^\s#.]+)/)
+        if(/^\.|#/.test(m[1]))
+          e = document.createElement('div')
+        forEach(m, function (v) {
+          var s = v.substring(1,v.length)
+          if(!v) return
+          if(!e)
+            e = document.createElement(v)
+          else if (v[0] === '.')
+            ClassList(e).add(s)
+          else if (v[0] === '#')
+            e.setAttribute('id', s)
+        })
+      }
+
+      if(l == null)
+        ;
+      else if('string' === typeof l) {
+        if(!e)
+          parseClass(l)
+        else
+          e.appendChild(r = document.createTextNode(l))
+      }
+      else if('number' === typeof l
+        || 'boolean' === typeof l
+        || l instanceof Date
+        || l instanceof RegExp ) {
+          e.appendChild(r = document.createTextNode(l.toString()))
+      }
+      //there might be a better way to handle this...
+      else if (isArray(l))
+        forEach(l, item)
+      else if(isNode(l))
+        e.appendChild(r = l)
+      else if(l instanceof Text)
+        e.appendChild(r = l)
+      else if ('object' === typeof l) {
+        for (var k in l) {
+          if('function' === typeof l[k]) {
+            if(/^on\w+/.test(k)) {
+              (function (k, l) { // capture k, l in the closure
+                if (e.addEventListener){
+                  e.addEventListener(k.substring(2), l[k], false)
+                  cleanupFuncs.push(function(){
+                    e.removeEventListener(k.substring(2), l[k], false)
+                  })
+                }else{
+                  e.attachEvent(k, l[k])
+                  cleanupFuncs.push(function(){
+                    e.detachEvent(k, l[k])
+                  })
+                }
+              })(k, l)
+            } else {
+              // observable
+              e[k] = l[k]()
+              cleanupFuncs.push(l[k](function (v) {
+                e[k] = v
+              }))
+            }
+          }
+          else if(k === 'style') {
+            if('string' === typeof l[k]) {
+              e.style.cssText = l[k]
+            }else{
+              for (var s in l[k]) (function(s, v) {
+                if('function' === typeof v) {
+                  // observable
+                  e.style.setProperty(s, v())
+                  cleanupFuncs.push(v(function (val) {
+                    e.style.setProperty(s, val)
+                  }))
+                } else
+                  var match = l[k][s].match(/(.*)\W+!important\W*$/);
+                  if (match) {
+                    e.style.setProperty(s, match[1], 'important')
+                  } else {
+                    e.style.setProperty(s, l[k][s])
+                  }
+              })(s, l[k][s])
+            }
+          } else if(k === 'attrs') {
+            for (var v in l[k]) {
+              e.setAttribute(v, l[k][v])
+            }
+          }
+          else if (k.substr(0, 5) === "data-") {
+            e.setAttribute(k, l[k])
+          } else {
+            e[k] = l[k]
+          }
+        }
+      } else if ('function' === typeof l) {
+        //assume it's an observable!
+        var v = l()
+        e.appendChild(r = isNode(v) ? v : document.createTextNode(v))
+
+        cleanupFuncs.push(l(function (v) {
+          if(isNode(v) && r.parentElement)
+            r.parentElement.replaceChild(v, r), r = v
+          else
+            r.textContent = v
+        }))
+      }
+
+      return r
+    }
+    while(args.length)
+      item(args.shift())
+
+    return e
+  }
+
+  h.cleanup = function () {
+    for (var i = 0; i < cleanupFuncs.length; i++){
+      cleanupFuncs[i]()
+    }
+    cleanupFuncs.length = 0
+  }
+
+  return h
+}
+
+var h = module.exports = context()
+h.context = context
+
+function isNode (el) {
+  return el && el.nodeName && el.nodeType
+}
+
+function forEach (arr, fn) {
+  if (arr.forEach) return arr.forEach(fn)
+  for (var i = 0; i < arr.length; i++) fn(arr[i], i)
+}
+
+function isArray (arr) {
+  return Object.prototype.toString.call(arr) == '[object Array]'
+}
+
+
+
+},{"browser-split":7,"class-list":8,"html-element":6}],10:[function(require,module,exports){
+
+var indexOf = [].indexOf;
+
+module.exports = function(arr, obj){
+  if (indexOf) return arr.indexOf(obj);
+  for (var i = 0; i < arr.length; ++i) {
+    if (arr[i] === obj) return i;
+  }
+  return -1;
+};
+},{}],11:[function(require,module,exports){
+function wrap (raw) {
+  if (raw.indexOf('&') >= 0) { return raw }
+  return '& { ' + raw + ' }'
+}
+
+module.exports = function (size, css) {
+  return `
+@media (min-width: ${size}px) {
+  ${wrap(css)}
+}`
+}
+
+},{}],12:[function(require,module,exports){
 // css based on https://github.com/dhg/Skeleton/
 
 const cmz = require('cmz')
+const atMedia = require('./at-media')
 
-const colors = {
+const defaultColors = {
   grey1: '#222',
   grey2: '#333',
   grey3: '#555',
@@ -244,72 +703,64 @@ const colors = {
 
   white: '#FFF',
 
-  blue1: '#1EAEDB',
-  blue2: '#33C3F0'
+  highlight1: '#1EAEDB',
+  highlight2: '#33C3F0'
 }
 
-function wrap (raw) {
-  if (raw.indexOf('&') >= 0) { return raw }
-  return '& { ' + raw + ' }'
-}
 
-function atMedia (size, css) {
-  return `
-@media (min-width: ${size}px) {
-  ${wrap(css)}
-}`
-}
+module.exports = function (colors) {
+  colors = colors ? Object.assign({}, defaultColors, colors) : defaultColors
 
-const Typo = cmz('Typo', {
-  base: `
+  const Typo = cmz('Typo', {
+    base: `
   line-height: 1.6;
   font-weight: 400;
   font-family: Helvetica, Arial, sans-serif;
   color: ${colors.grey1};
   `
-})
+  })
 
-Typo.add({
-  heading: [
-    Typo.base,
-    `
+  Typo.add({
+    heading: [
+      Typo.base,
+      `
     margin-top: 0;
     margin-bottom: 2rem;
     font-weight: 300;
     letter-spacing: -.1rem;
     `
-  ]
-})
+    ]
+  })
 
-Typo.add({
-  h1: [
-    Typo.heading,
-    `
+  Typo.add({
+    h1: [
+      Typo.heading,
+      `
     font-size: 4.0rem;
     line-height: 1.2;
     `,
-    atMedia(550, 'font-size: 5.0rem')
-  ],
+      atMedia(550, 'font-size: 5.0rem')
+    ],
 
-  h2: [
-    Typo.heading,
-    'font-size: 3.6rem',
-    'line-height: 1.25',
-    atMedia(550, 'font-size: 4.2rem')
-  ],
+    h2: [
+      Typo.heading,
+      'font-size: 3.6rem',
+      'line-height: 1.25',
+      atMedia(550, 'font-size: 4.2rem')
+    ],
 
-  h3: [
-    Typo.heading,
-    `
+    h3: [
+      Typo.heading,
+      `
     font-size: 3.0rem;
     line-height: 1.3;
     `,
-    atMedia(550, 'font-size: 3.6rem')
-  ]
-})
+      atMedia(550, 'font-size: 3.6rem')
+    ]
+  })
 
-const Buttons = cmz('Buttons', {
-  normal: `
+  const Buttons = cmz('Buttons', {
+    normal: `
 & {
   display: inline-block;
   height: 38px;
@@ -338,36 +789,37 @@ const Buttons = cmz('Buttons', {
   outline: 0;
 }
 `
-})
+  })
 
-Buttons.add({
-  primary: [
-    Buttons.normal,
-    `
+  Buttons.add({
+    primary: [
+      Buttons.normal,
+      `
 & {
   color: ${colors.white};
-  background-color: ${colors.blue2};
-  border-color: ${colors.blue2};
+  background-color: ${colors.highlight2};
+  border-color: ${colors.highlight2};
 }
 
 &:hover,
 &:focus {
   color: ${colors.white};
-  background-color: ${colors.blue1};
-  border-color: ${colors.blue1};
+  background-color: ${colors.highlight1};
+  border-color: ${colors.highlight1};
 }
 `
-  ]
-})
+    ]
+  })
 
-const Forms = cmz('Forms', {
-  root: [
-    Typo.base,
-    'margin-bottom: 2.5rem'
-  ],
+  const Forms = cmz('Forms', {
+    root: [
+      Typo.base,
+      'margin-bottom: 2.5rem'
+    ],
 
-  input: `
+    input: `
 & {
+  font-size: 12px;
   height: 38px;
   padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
   background-color: ${colors.white};
@@ -384,60 +836,60 @@ const Forms = cmz('Forms', {
 }
 
 &:focus {
-  border: 1px solid ${colors.blue2}x;
+  border: 1px solid ${colors.highlight2}x;
   outline: 0;
 }
 `,
 
-  label: `
+    label: `
   display: block;
   margin-bottom: .5rem;
   font-weight: 600;
   `,
 
-  labelBody: `
+    labelBody: `
   display: inline-block;
   margin-left: .5rem;
   font-weight: normal;
   `,
 
-  fieldset: `
+    fieldset: `
   padding: 0;
   border-width: 0;
   `,
 
-  checkbox: `
+    checkbox: `
   display: inline
 `,
-  radio: `
+    radio: `
   display: inline
 `
-})
+  })
 
-Forms.add({
-  textarea: [
-    Forms.input,
-    `
+  Forms.add({
+    textarea: [
+      Forms.input,
+      `
     min-height: 65px;
     padding-top: 6px;
     padding-bottom: 6px;
     `
-  ]
-})
+    ]
+  })
 
-const Layout = cmz('Layout', {
-  clearSelf: `
+  const Layout = cmz('Layout', {
+    clearSelf: `
 &:after {
   content: "";
   display: table;
   clear: both;
 }
   `
-})
+  })
 
-Layout.add({
-  container: [
-    `
+  Layout.add({
+    container: [
+      `
     position: relative;
     width: 100%;
     max-width: 960px;
@@ -445,31 +897,31 @@ Layout.add({
     padding: 0 20px;
     box-sizing: border-box;
     `,
-    atMedia(400, `
+      atMedia(400, `
       width: 85%;
       padding: 0
     `),
-    atMedia(550, `
+      atMedia(550, `
       width: 80%;
     `),
-    Layout.clearSelf
-  ],
+      Layout.clearSelf
+    ],
 
-  row: [
-    Layout.clearSelf
-  ],
+    row: [
+      Layout.clearSelf
+    ],
 
-  fullWidth: [
-    'width: 100%',
-    'box-sizing: border-box'
-  ]
-})
+    fullWidth: [
+      'width: 100%',
+      'box-sizing: border-box'
+    ]
+  })
 
-Layout.add({
-  column: [
-    Layout.fullWidth,
-    'float: left',
-    atMedia(550, `
+  Layout.add({
+    column: [
+      Layout.fullWidth,
+      'float: left',
+      atMedia(550, `
 & {
   margin-left: 4%;
 }
@@ -478,20 +930,23 @@ Layout.add({
   margin-left: 0;
 }
 `)
-  ]
-})
+    ]
+  })
 
-Layout.add({
-  col6: [
-    Layout.column,
-    atMedia(550, 'width: 48%')
-  ]
-})
+  Layout.add({
+    col6: [
+      Layout.column,
+      atMedia(550, 'width: 48%')
+    ]
+  })
 
-module.exports.colors = colors
-module.exports.Buttons = Buttons
-module.exports.Forms = Forms
-module.exports.Layout = Layout
-module.exports.Typo = Typo
+  return {
+    colors,
+    Buttons,
+    Forms,
+    Layout,
+    Typo
+  }
+}
 
-},{"cmz":1}]},{},[4]);
+},{"./at-media":11,"cmz":1}]},{},[5]);
