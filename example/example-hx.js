@@ -1,7 +1,10 @@
 // example: binding classnames to an element
 const cmz = require('cmz')
 const h = require('hyperscript')
-const z = require('../src')
+const z = require('../src/custom')({
+  highlight1: 'pink',
+  highlight2: 'hotpink'
+})
 
 // first we define a module from zkeleton atoms
 const mod = cmz('Zkeleton-Example', {
