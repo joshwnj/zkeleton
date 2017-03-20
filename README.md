@@ -48,3 +48,7 @@ const defaultColors = {
   highlight2: '#33C3F0'
 }
 ```
+
+## Thanks
+
+- [skeleton](https://github.com/dhg/Skeleton/)
