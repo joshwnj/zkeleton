@@ -23,22 +23,22 @@ module.exports = function (colors) {
 
   const Typo = cmz('Typo', {
     base: `
-  line-height: 1.6;
-  font-weight: 400;
-  font-family: Helvetica, Arial, sans-serif;
-  color: ${colors.grey1};
-  `
+      line-height: 1.6;
+      font-weight: 400;
+      font-family: Helvetica, Arial, sans-serif;
+      color: ${colors.grey1};
+    `
   })
 
   Typo.add({
     heading: [
       Typo.base,
       `
-    margin-top: 0;
-    margin-bottom: 2rem;
-    font-weight: 300;
-    letter-spacing: -.1rem;
-    `
+      margin-top: 0;
+      margin-bottom: 2rem;
+      font-weight: 300;
+      letter-spacing: -.1rem;
+      `
     ]
   })
 
@@ -46,9 +46,9 @@ module.exports = function (colors) {
     h1: [
       Typo.heading,
       `
-    font-size: 4.0rem;
-    line-height: 1.2;
-    `,
+      font-size: 4.0rem;
+      line-height: 1.2;
+      `,
       atMedia(550, 'font-size: 5.0rem')
     ],
 
@@ -62,62 +62,62 @@ module.exports = function (colors) {
     h3: [
       Typo.heading,
       `
-    font-size: 3.0rem;
-    line-height: 1.3;
-    `,
+      font-size: 3.0rem;
+      line-height: 1.3;
+      `,
       atMedia(550, 'font-size: 3.6rem')
     ]
   })
 
   const Buttons = cmz('Buttons', {
     normal: `
-& {
-  display: inline-block;
-  height: 38px;
-  padding: 0 30px;
-  margin-bottom: 1rem;
-  color: ${colors.grey3};
-  text-align: center;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 38px;
-  letter-spacing: .1rem;
-  text-transform: uppercase;
-  text-decoration: none;
-  white-space: nowrap;
-  background-color: transparent;
-  border-radius: 4px;
-  border: 1px solid ${colors.grey5};
-  cursor: pointer;
-  box-sizing: border-box;
-}
+      & {
+        display: inline-block;
+        height: 38px;
+        padding: 0 30px;
+        margin-bottom: 1rem;
+        color: ${colors.grey3};
+        text-align: center;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 38px;
+        letter-spacing: .1rem;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        background-color: transparent;
+        border-radius: 4px;
+        border: 1px solid ${colors.grey5};
+        cursor: pointer;
+        box-sizing: border-box;
+      }
 
-&:hover,
-&:focus {
-  color: ${colors.grey2};
-  border-color: ${colors.grey4};
-  outline: 0;
-}
-`
+      &:hover,
+      &:focus {
+        color: ${colors.grey2};
+        border-color: ${colors.grey4};
+        outline: 0;
+      }
+    `
   })
 
   Buttons.add({
     primary: [
       Buttons.normal,
       `
-& {
-  color: ${colors.white};
-  background-color: ${colors.highlight2};
-  border-color: ${colors.highlight2};
-}
+      & {
+        color: ${colors.white};
+        background-color: ${colors.highlight2};
+        border-color: ${colors.highlight2};
+      }
 
-&:hover,
-&:focus {
-  color: ${colors.white};
-  background-color: ${colors.highlight1};
-  border-color: ${colors.highlight1};
-}
-`
+      &:hover,
+      &:focus {
+        color: ${colors.white};
+        background-color: ${colors.highlight1};
+        border-color: ${colors.highlight1};
+      }
+      `
     ]
   })
 
@@ -128,92 +128,93 @@ module.exports = function (colors) {
     ],
 
     input: `
-& {
-  font-size: 12px;
-  height: 38px;
-  padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
-  background-color: ${colors.white};
-  border: 1px solid ${colors.grey6};
-  border-radius: 4px;
-  box-shadow: none;
-  box-sizing: border-box;
-  margin-bottom: 1.5rem;
+      & {
+        font-size: 12px;
+        height: 38px;
+        padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
+        background-color: ${colors.white};
+        border: 1px solid ${colors.grey6};
+        border-radius: 4px;
+        box-shadow: none;
+        box-sizing: border-box;
+        margin-bottom: 1.5rem;
 
-  /* Removes awkward default styles on some inputs for iOS */
-  -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
-}
+        /* Removes awkward default styles on some inputs for iOS */
+        -webkit-appearance: none;
+           -moz-appearance: none;
+                appearance: none;
+      }
 
-&:focus {
-  border: 1px solid ${colors.highlight2}x;
-  outline: 0;
-}
-`,
+      &:focus {
+        border: 1px solid ${colors.highlight2}x;
+        outline: 0;
+      }
+    `,
 
     label: `
-  display: block;
-  margin-bottom: .5rem;
-  font-weight: 600;
-  `,
+      display: block;
+      margin-bottom: .5rem;
+      font-weight: 600;
+     `,
 
     labelBody: `
-  display: inline-block;
-  margin-left: .5rem;
-  font-weight: normal;
-  `,
+      display: inline-block;
+      margin-left: .5rem;
+      font-weight: normal;
+    `,
 
     fieldset: `
-  padding: 0;
-  border-width: 0;
-  `,
+      padding: 0;
+      border-width: 0;
+    `,
 
     checkbox: `
-  display: inline
-`,
+      display: inline
+    `,
+
     radio: `
-  display: inline
-`
+      display: inline
+    `
   })
 
   Forms.add({
     textarea: [
       Forms.input,
       `
-    min-height: 65px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-    `
+        min-height: 65px;
+        padding-top: 6px;
+        padding-bottom: 6px;
+      `
     ]
   })
 
   const Layout = cmz('Layout', {
     clearSelf: `
-&:after {
-  content: "";
-  display: table;
-  clear: both;
-}
-  `
+      &:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+    `
   })
 
   Layout.add({
     container: [
       `
-    position: relative;
-    width: 100%;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 20px;
-    box-sizing: border-box;
-    `,
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 20px;
+      box-sizing: border-box;
+      `,
       atMedia(400, `
-      width: 85%;
-      padding: 0
-    `),
+        width: 85%;
+        padding: 0
+      `),
       atMedia(550, `
-      width: 80%;
-    `),
+        width: 80%;
+      `),
       Layout.clearSelf
     ],
 
@@ -232,14 +233,14 @@ module.exports = function (colors) {
       Layout.fullWidth,
       'float: left',
       atMedia(550, `
-& {
-  margin-left: 4%;
-}
+        & {
+          margin-left: 4%;
+        }
 
-&:first-child {
-  margin-left: 0;
-}
-`)
+        &:first-child {
+          margin-left: 0;
+        }
+        `)
     ]
   })
 
