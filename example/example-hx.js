@@ -15,7 +15,7 @@ const mod = cmz('Zkeleton-Example', {
   Label: [ z.Forms.label ],
   Input: [ z.Forms.input, z.Layout.fullWidth ],
   Select: [ z.Forms.input, z.Layout.fullWidth ],
-  Textarea: [ z.Forms.input, z.Layout.fullWidth ]
+  Textarea: [ z.Forms.textarea, z.Layout.fullWidth ]
 })
 
 // next we'll bind the classnames to the elements
