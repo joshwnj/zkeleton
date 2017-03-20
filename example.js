@@ -1,4 +1,319 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+// example: binding classnames to an element
+const cmz = require('cmz')
+const h = require('hyperscript')
+const z = require('../src/custom')({
+  highlight1: 'pink',
+  highlight2: 'hotpink'
+})
+
+// first we define a module from zkeleton atoms
+const mod = cmz('Zkeleton-Example', {
+  Root: [ z.Layout.container ],
+  Row: [ z.Layout.row ],
+
+  Form: [ z.Forms.root ],
+  Label: [ z.Forms.label ],
+  Input: [ z.Forms.input, z.Layout.fullWidth ],
+  Select: [ z.Forms.input, z.Layout.fullWidth ],
+  Textarea: [ z.Forms.textarea, z.Layout.fullWidth ]
+})
+
+// next we'll bind the classnames to the elements
+const {
+  Root,
+  Row,
+
+  Form,
+  Label,
+  Input,
+  Select,
+  Textarea
+} = wrap(mod.getAtoms(), {
+  Form: 'form',
+  Label: 'label',
+  Input: 'input',
+  Select: 'select',
+  Textarea: 'textarea'
+})
+
+const el = document.getElementById('root')
+
+el.innerHTML = Root([
+  // we can also create functions that produce families of elements
+  Heading(1, 'Heading 1'),
+  Heading(2, 'Heading 2'),
+  Heading(3, 'Heading 3'),
+
+  Button('Normal button'),
+  ' ',
+  Button({ primary: true }, 'Primary button'),
+
+  Form([
+    Row([
+      Col(6, [
+        Label('Your email'),
+        Input({
+          type: 'email',
+          placeholder: 'text@example.com'
+        })
+      ]),
+      Col(6, [
+        Label('Reason for contacting'),
+        Select([
+          h('option', 'Questions')
+        ])
+      ])
+    ]),
+
+    Label('Message'),
+    Textarea({ placeholder: 'Hi Dave...' }),
+
+    Button({ primary: true }, 'Submit')
+  ])
+]).outerHTML
+
+// ----
+
+function wrap (atoms, tags={}) {
+  const output = {}
+  Object.keys(atoms).forEach(k => {
+    output[k] = h.bind(null, tags[k] || 'div', { className: atoms[k].toString() })
+  })
+  return output
+}
+
+function Col (num, attr, children) {
+  return h('div', { className: z.Layout['col' + num] }, attr, children)
+}
+
+function Button (attr, children) {
+  const className = z.Buttons[(attr.primary) ? 'primary' : 'normal']
+  return h('button', { className }, attr, children)
+}
+
+function Heading (level, attr, children) {
+  const tag = 'h' + level
+  return h(tag, { className: z.Typo[tag] }, attr, children)
+}
+
+},{"../src/custom":12,"cmz":6,"hyperscript":9}],2:[function(require,module,exports){
+require('./example-hx')
+
+if (module.hot) { module.hot.accept() }
+
+},{"./example-hx":1}],3:[function(require,module,exports){
+
+},{}],4:[function(require,module,exports){
+/*!
+ * Cross-Browser Split 1.1.1
+ * Copyright 2007-2012 Steven Levithan <stevenlevithan.com>
+ * Available under the MIT License
+ * ECMAScript compliant, uniform cross-browser split method
+ */
+
+/**
+ * Splits a string into an array of strings using a regex or string separator. Matches of the
+ * separator are not included in the result array. However, if `separator` is a regex that contains
+ * capturing groups, backreferences are spliced into the result each time `separator` is matched.
+ * Fixes browser bugs compared to the native `String.prototype.split` and can be used reliably
+ * cross-browser.
+ * @param {String} str String to split.
+ * @param {RegExp|String} separator Regex or string to use for separating the string.
+ * @param {Number} [limit] Maximum number of items to include in the result array.
+ * @returns {Array} Array of substrings.
+ * @example
+ *
+ * // Basic use
+ * split('a b c d', ' ');
+ * // -> ['a', 'b', 'c', 'd']
+ *
+ * // With limit
+ * split('a b c d', ' ', 2);
+ * // -> ['a', 'b']
+ *
+ * // Backreferences in result array
+ * split('..word1 word2..', /([a-z]+)(\d+)/i);
+ * // -> ['..', 'word', '1', ' ', 'word', '2', '..']
+ */
+module.exports = (function split(undef) {
+
+  var nativeSplit = String.prototype.split,
+    compliantExecNpcg = /()??/.exec("")[1] === undef,
+    // NPCG: nonparticipating capturing group
+    self;
+
+  self = function(str, separator, limit) {
+    // If `separator` is not a regex, use `nativeSplit`
+    if (Object.prototype.toString.call(separator) !== "[object RegExp]") {
+      return nativeSplit.call(str, separator, limit);
+    }
+    var output = [],
+      flags = (separator.ignoreCase ? "i" : "") + (separator.multiline ? "m" : "") + (separator.extended ? "x" : "") + // Proposed for ES6
+      (separator.sticky ? "y" : ""),
+      // Firefox 3+
+      lastLastIndex = 0,
+      // Make `global` and avoid `lastIndex` issues by working with a copy
+      separator = new RegExp(separator.source, flags + "g"),
+      separator2, match, lastIndex, lastLength;
+    str += ""; // Type-convert
+    if (!compliantExecNpcg) {
+      // Doesn't need flags gy, but they don't hurt
+      separator2 = new RegExp("^" + separator.source + "$(?!\\s)", flags);
+    }
+    /* Values for `limit`, per the spec:
+     * If undefined: 4294967295 // Math.pow(2, 32) - 1
+     * If 0, Infinity, or NaN: 0
+     * If positive number: limit = Math.floor(limit); if (limit > 4294967295) limit -= 4294967296;
+     * If negative number: 4294967296 - Math.floor(Math.abs(limit))
+     * If other: Type-convert, then use the above rules
+     */
+    limit = limit === undef ? -1 >>> 0 : // Math.pow(2, 32) - 1
+    limit >>> 0; // ToUint32(limit)
+    while (match = separator.exec(str)) {
+      // `separator.lastIndex` is not reliable cross-browser
+      lastIndex = match.index + match[0].length;
+      if (lastIndex > lastLastIndex) {
+        output.push(str.slice(lastLastIndex, match.index));
+        // Fix browsers whose `exec` methods don't consistently return `undefined` for
+        // nonparticipating capturing groups
+        if (!compliantExecNpcg && match.length > 1) {
+          match[0].replace(separator2, function() {
+            for (var i = 1; i < arguments.length - 2; i++) {
+              if (arguments[i] === undef) {
+                match[i] = undef;
+              }
+            }
+          });
+        }
+        if (match.length > 1 && match.index < str.length) {
+          Array.prototype.push.apply(output, match.slice(1));
+        }
+        lastLength = match[0].length;
+        lastLastIndex = lastIndex;
+        if (output.length >= limit) {
+          break;
+        }
+      }
+      if (separator.lastIndex === match.index) {
+        separator.lastIndex++; // Avoid an infinite loop
+      }
+    }
+    if (lastLastIndex === str.length) {
+      if (lastLength || !separator.test("")) {
+        output.push("");
+      }
+    } else {
+      output.push(str.slice(lastLastIndex));
+    }
+    return output.length > limit ? output.slice(0, limit) : output;
+  };
+
+  return self;
+})();
+
+},{}],5:[function(require,module,exports){
+// contains, add, remove, toggle
+var indexof = require('indexof')
+
+module.exports = ClassList
+
+function ClassList(elem) {
+    var cl = elem.classList
+
+    if (cl) {
+        return cl
+    }
+
+    var classList = {
+        add: add
+        , remove: remove
+        , contains: contains
+        , toggle: toggle
+        , toString: $toString
+        , length: 0
+        , item: item
+    }
+
+    return classList
+
+    function add(token) {
+        var list = getTokens()
+        if (indexof(list, token) > -1) {
+            return
+        }
+        list.push(token)
+        setTokens(list)
+    }
+
+    function remove(token) {
+        var list = getTokens()
+            , index = indexof(list, token)
+
+        if (index === -1) {
+            return
+        }
+
+        list.splice(index, 1)
+        setTokens(list)
+    }
+
+    function contains(token) {
+        return indexof(getTokens(), token) > -1
+    }
+
+    function toggle(token) {
+        if (contains(token)) {
+            remove(token)
+            return false
+        } else {
+            add(token)
+            return true
+        }
+    }
+
+    function $toString() {
+        return elem.className
+    }
+
+    function item(index) {
+        var tokens = getTokens()
+        return tokens[index] || null
+    }
+
+    function getTokens() {
+        var className = elem.className
+
+        return filter(className.split(" "), isTruthy)
+    }
+
+    function setTokens(list) {
+        var length = list.length
+
+        elem.className = list.join(" ")
+        classList.length = length
+
+        for (var i = 0; i < list.length; i++) {
+            classList[i] = list[i]
+        }
+
+        delete list[length]
+    }
+}
+
+function filter (arr, fn) {
+    var ret = []
+    for (var i = 0; i < arr.length; i++) {
+        if (fn(arr[i])) ret.push(arr[i])
+    }
+    return ret
+}
+
+function isTruthy(value) {
+    return !!value
+}
+
+},{"indexof":10}],6:[function(require,module,exports){
 const upsertCss = require('./lib/upsert-css')
 const createName = require('./lib/create-name')
 
@@ -158,7 +473,7 @@ cmz.reset = createName.reset
 
 module.exports = cmz
 
-},{"./lib/create-name":2,"./lib/upsert-css":3}],2:[function(require,module,exports){
+},{"./lib/create-name":7,"./lib/upsert-css":8}],7:[function(require,module,exports){
 var nameCounter = 0
 module.exports = function createName () {
   const name = 'cmz-' + nameCounter
@@ -169,7 +484,7 @@ module.exports.reset = function () {
   nameCounter = 0
 }
 
-},{}],3:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = function upsertCss (id, css) {
   if (typeof document === 'undefined') { return }
 
@@ -192,326 +507,7 @@ module.exports = function upsertCss (id, css) {
   return el
 }
 
-},{}],4:[function(require,module,exports){
-// example: binding classnames to an element
-const cmz = require('cmz')
-const h = require('hyperscript')
-const z = require('../src/custom')({
-  highlight1: 'pink',
-  highlight2: 'hotpink'
-})
-
-// first we define a module from zkeleton atoms
-const mod = cmz('Zkeleton-Example', {
-  Root: [ z.Layout.container ],
-  Row: [ z.Layout.row ],
-
-  Form: [ z.Forms.root ],
-  Label: [ z.Forms.label ],
-  Input: [ z.Forms.input, z.Layout.fullWidth ],
-  Select: [ z.Forms.input, z.Layout.fullWidth ],
-  Textarea: [ z.Forms.input, z.Layout.fullWidth ]
-})
-
-// next we'll bind the classnames to the elements
-const {
-  Root,
-  Row,
-
-  Form,
-  Label,
-  Input,
-  Select,
-  Textarea
-} = wrap(mod.getAtoms(), {
-  Form: 'form',
-  Label: 'label',
-  Input: 'input',
-  Select: 'select',
-  Textarea: 'textarea'
-})
-
-const el = document.getElementById('root')
-
-el.innerHTML = Root([
-  // we can also create functions that produce families of elements
-  Heading(1, 'Heading 1'),
-  Heading(2, 'Heading 2'),
-  Heading(3, 'Heading 3'),
-
-  Button('Normal button'),
-  ' ',
-  Button({ primary: true }, 'Primary button'),
-
-  Form([
-    Row([
-      Col(6, [
-        Label('Your email'),
-        Input({
-          type: 'email',
-          placeholder: 'text@example.com'
-        })
-      ]),
-      Col(6, [
-        Label('Reason for contacting'),
-        Select([
-          h('option', 'Questions')
-        ])
-      ])
-    ]),
-
-    Label('Message'),
-    Textarea({ placeholder: 'Hi Dave...' }),
-
-    Button({ primary: true }, 'Submit')
-  ])
-]).outerHTML
-
-// ----
-
-function wrap (atoms, tags={}) {
-  const output = {}
-  Object.keys(atoms).forEach(k => {
-    output[k] = h.bind(null, tags[k] || 'div', { className: atoms[k].toString() })
-  })
-  return output
-}
-
-function Col (num, attr, children) {
-  return h('div', { className: z.Layout['col' + num] }, attr, children)
-}
-
-function Button (attr, children) {
-  const className = z.Buttons[(attr.primary) ? 'primary' : 'normal']
-  return h('button', { className }, attr, children)
-}
-
-function Heading (level, attr, children) {
-  const tag = 'h' + level
-  return h(tag, { className: z.Typo[tag] }, attr, children)
-}
-
-},{"../src/custom":15,"cmz":9,"hyperscript":12}],5:[function(require,module,exports){
-require('./example-hx')
-
-},{"./example-hx":4}],6:[function(require,module,exports){
-
-},{}],7:[function(require,module,exports){
-/*!
- * Cross-Browser Split 1.1.1
- * Copyright 2007-2012 Steven Levithan <stevenlevithan.com>
- * Available under the MIT License
- * ECMAScript compliant, uniform cross-browser split method
- */
-
-/**
- * Splits a string into an array of strings using a regex or string separator. Matches of the
- * separator are not included in the result array. However, if `separator` is a regex that contains
- * capturing groups, backreferences are spliced into the result each time `separator` is matched.
- * Fixes browser bugs compared to the native `String.prototype.split` and can be used reliably
- * cross-browser.
- * @param {String} str String to split.
- * @param {RegExp|String} separator Regex or string to use for separating the string.
- * @param {Number} [limit] Maximum number of items to include in the result array.
- * @returns {Array} Array of substrings.
- * @example
- *
- * // Basic use
- * split('a b c d', ' ');
- * // -> ['a', 'b', 'c', 'd']
- *
- * // With limit
- * split('a b c d', ' ', 2);
- * // -> ['a', 'b']
- *
- * // Backreferences in result array
- * split('..word1 word2..', /([a-z]+)(\d+)/i);
- * // -> ['..', 'word', '1', ' ', 'word', '2', '..']
- */
-module.exports = (function split(undef) {
-
-  var nativeSplit = String.prototype.split,
-    compliantExecNpcg = /()??/.exec("")[1] === undef,
-    // NPCG: nonparticipating capturing group
-    self;
-
-  self = function(str, separator, limit) {
-    // If `separator` is not a regex, use `nativeSplit`
-    if (Object.prototype.toString.call(separator) !== "[object RegExp]") {
-      return nativeSplit.call(str, separator, limit);
-    }
-    var output = [],
-      flags = (separator.ignoreCase ? "i" : "") + (separator.multiline ? "m" : "") + (separator.extended ? "x" : "") + // Proposed for ES6
-      (separator.sticky ? "y" : ""),
-      // Firefox 3+
-      lastLastIndex = 0,
-      // Make `global` and avoid `lastIndex` issues by working with a copy
-      separator = new RegExp(separator.source, flags + "g"),
-      separator2, match, lastIndex, lastLength;
-    str += ""; // Type-convert
-    if (!compliantExecNpcg) {
-      // Doesn't need flags gy, but they don't hurt
-      separator2 = new RegExp("^" + separator.source + "$(?!\\s)", flags);
-    }
-    /* Values for `limit`, per the spec:
-     * If undefined: 4294967295 // Math.pow(2, 32) - 1
-     * If 0, Infinity, or NaN: 0
-     * If positive number: limit = Math.floor(limit); if (limit > 4294967295) limit -= 4294967296;
-     * If negative number: 4294967296 - Math.floor(Math.abs(limit))
-     * If other: Type-convert, then use the above rules
-     */
-    limit = limit === undef ? -1 >>> 0 : // Math.pow(2, 32) - 1
-    limit >>> 0; // ToUint32(limit)
-    while (match = separator.exec(str)) {
-      // `separator.lastIndex` is not reliable cross-browser
-      lastIndex = match.index + match[0].length;
-      if (lastIndex > lastLastIndex) {
-        output.push(str.slice(lastLastIndex, match.index));
-        // Fix browsers whose `exec` methods don't consistently return `undefined` for
-        // nonparticipating capturing groups
-        if (!compliantExecNpcg && match.length > 1) {
-          match[0].replace(separator2, function() {
-            for (var i = 1; i < arguments.length - 2; i++) {
-              if (arguments[i] === undef) {
-                match[i] = undef;
-              }
-            }
-          });
-        }
-        if (match.length > 1 && match.index < str.length) {
-          Array.prototype.push.apply(output, match.slice(1));
-        }
-        lastLength = match[0].length;
-        lastLastIndex = lastIndex;
-        if (output.length >= limit) {
-          break;
-        }
-      }
-      if (separator.lastIndex === match.index) {
-        separator.lastIndex++; // Avoid an infinite loop
-      }
-    }
-    if (lastLastIndex === str.length) {
-      if (lastLength || !separator.test("")) {
-        output.push("");
-      }
-    } else {
-      output.push(str.slice(lastLastIndex));
-    }
-    return output.length > limit ? output.slice(0, limit) : output;
-  };
-
-  return self;
-})();
-
-},{}],8:[function(require,module,exports){
-// contains, add, remove, toggle
-var indexof = require('indexof')
-
-module.exports = ClassList
-
-function ClassList(elem) {
-    var cl = elem.classList
-
-    if (cl) {
-        return cl
-    }
-
-    var classList = {
-        add: add
-        , remove: remove
-        , contains: contains
-        , toggle: toggle
-        , toString: $toString
-        , length: 0
-        , item: item
-    }
-
-    return classList
-
-    function add(token) {
-        var list = getTokens()
-        if (indexof(list, token) > -1) {
-            return
-        }
-        list.push(token)
-        setTokens(list)
-    }
-
-    function remove(token) {
-        var list = getTokens()
-            , index = indexof(list, token)
-
-        if (index === -1) {
-            return
-        }
-
-        list.splice(index, 1)
-        setTokens(list)
-    }
-
-    function contains(token) {
-        return indexof(getTokens(), token) > -1
-    }
-
-    function toggle(token) {
-        if (contains(token)) {
-            remove(token)
-            return false
-        } else {
-            add(token)
-            return true
-        }
-    }
-
-    function $toString() {
-        return elem.className
-    }
-
-    function item(index) {
-        var tokens = getTokens()
-        return tokens[index] || null
-    }
-
-    function getTokens() {
-        var className = elem.className
-
-        return filter(className.split(" "), isTruthy)
-    }
-
-    function setTokens(list) {
-        var length = list.length
-
-        elem.className = list.join(" ")
-        classList.length = length
-
-        for (var i = 0; i < list.length; i++) {
-            classList[i] = list[i]
-        }
-
-        delete list[length]
-    }
-}
-
-function filter (arr, fn) {
-    var ret = []
-    for (var i = 0; i < arr.length; i++) {
-        if (fn(arr[i])) ret.push(arr[i])
-    }
-    return ret
-}
-
-function isTruthy(value) {
-    return !!value
-}
-
-},{"indexof":13}],9:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"./lib/create-name":10,"./lib/upsert-css":11,"dup":1}],10:[function(require,module,exports){
-arguments[4][2][0].apply(exports,arguments)
-},{"dup":2}],11:[function(require,module,exports){
-arguments[4][3][0].apply(exports,arguments)
-},{"dup":3}],12:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var split = require('browser-split')
 var ClassList = require('class-list')
 
@@ -673,7 +669,7 @@ function isArray (arr) {
 
 
 
-},{"browser-split":7,"class-list":8,"html-element":6}],13:[function(require,module,exports){
+},{"browser-split":4,"class-list":5,"html-element":3}],10:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -684,7 +680,7 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
-},{}],14:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 function wrap (raw) {
   if (raw.indexOf('&') >= 0) { return raw }
   return '& { ' + raw + ' }'
@@ -697,7 +693,7 @@ module.exports = function (size, css) {
 }`
 }
 
-},{}],15:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 // css based on https://github.com/dhg/Skeleton/
 
 const cmz = require('cmz')
@@ -723,22 +719,22 @@ module.exports = function (colors) {
 
   const Typo = cmz('Typo', {
     base: `
-  line-height: 1.6;
-  font-weight: 400;
-  font-family: Helvetica, Arial, sans-serif;
-  color: ${colors.grey1};
-  `
+      line-height: 1.6;
+      font-weight: 400;
+      font-family: Helvetica, Arial, sans-serif;
+      color: ${colors.grey1};
+    `
   })
 
   Typo.add({
     heading: [
       Typo.base,
       `
-    margin-top: 0;
-    margin-bottom: 2rem;
-    font-weight: 300;
-    letter-spacing: -.1rem;
-    `
+      margin-top: 0;
+      margin-bottom: 2rem;
+      font-weight: 300;
+      letter-spacing: -.1rem;
+      `
     ]
   })
 
@@ -746,9 +742,9 @@ module.exports = function (colors) {
     h1: [
       Typo.heading,
       `
-    font-size: 4.0rem;
-    line-height: 1.2;
-    `,
+      font-size: 4.0rem;
+      line-height: 1.2;
+      `,
       atMedia(550, 'font-size: 5.0rem')
     ],
 
@@ -762,62 +758,62 @@ module.exports = function (colors) {
     h3: [
       Typo.heading,
       `
-    font-size: 3.0rem;
-    line-height: 1.3;
-    `,
+      font-size: 3.0rem;
+      line-height: 1.3;
+      `,
       atMedia(550, 'font-size: 3.6rem')
     ]
   })
 
   const Buttons = cmz('Buttons', {
     normal: `
-& {
-  display: inline-block;
-  height: 38px;
-  padding: 0 30px;
-  margin-bottom: 1rem;
-  color: ${colors.grey3};
-  text-align: center;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 38px;
-  letter-spacing: .1rem;
-  text-transform: uppercase;
-  text-decoration: none;
-  white-space: nowrap;
-  background-color: transparent;
-  border-radius: 4px;
-  border: 1px solid ${colors.grey5};
-  cursor: pointer;
-  box-sizing: border-box;
-}
+      & {
+        display: inline-block;
+        height: 38px;
+        padding: 0 30px;
+        margin-bottom: 1rem;
+        color: ${colors.grey3};
+        text-align: center;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 38px;
+        letter-spacing: .1rem;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        background-color: transparent;
+        border-radius: 4px;
+        border: 1px solid ${colors.grey5};
+        cursor: pointer;
+        box-sizing: border-box;
+      }
 
-&:hover,
-&:focus {
-  color: ${colors.grey2};
-  border-color: ${colors.grey4};
-  outline: 0;
-}
-`
+      &:hover,
+      &:focus {
+        color: ${colors.grey2};
+        border-color: ${colors.grey4};
+        outline: 0;
+      }
+    `
   })
 
   Buttons.add({
     primary: [
       Buttons.normal,
       `
-& {
-  color: ${colors.white};
-  background-color: ${colors.highlight2};
-  border-color: ${colors.highlight2};
-}
+      & {
+        color: ${colors.white};
+        background-color: ${colors.highlight2};
+        border-color: ${colors.highlight2};
+      }
 
-&:hover,
-&:focus {
-  color: ${colors.white};
-  background-color: ${colors.highlight1};
-  border-color: ${colors.highlight1};
-}
-`
+      &:hover,
+      &:focus {
+        color: ${colors.white};
+        background-color: ${colors.highlight1};
+        border-color: ${colors.highlight1};
+      }
+      `
     ]
   })
 
@@ -828,92 +824,93 @@ module.exports = function (colors) {
     ],
 
     input: `
-& {
-  font-size: 12px;
-  height: 38px;
-  padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
-  background-color: ${colors.white};
-  border: 1px solid ${colors.grey6};
-  border-radius: 4px;
-  box-shadow: none;
-  box-sizing: border-box;
-  margin-bottom: 1.5rem;
+      & {
+        font-size: 15px;
+        height: 38px;
+        padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
+        background-color: ${colors.white};
+        border: 1px solid ${colors.grey6};
+        border-radius: 4px;
+        box-shadow: none;
+        box-sizing: border-box;
+        margin-bottom: 1.5rem;
 
-  /* Removes awkward default styles on some inputs for iOS */
-  -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
-}
+        /* Removes awkward default styles on some inputs for iOS */
+        -webkit-appearance: none;
+           -moz-appearance: none;
+                appearance: none;
+      }
 
-&:focus {
-  border: 1px solid ${colors.highlight2}x;
-  outline: 0;
-}
-`,
+      &:focus {
+        border: 1px solid ${colors.highlight2}x;
+        outline: 0;
+      }
+    `,
 
     label: `
-  display: block;
-  margin-bottom: .5rem;
-  font-weight: 600;
-  `,
+      display: block;
+      margin-bottom: .5rem;
+      font-weight: 600;
+     `,
 
     labelBody: `
-  display: inline-block;
-  margin-left: .5rem;
-  font-weight: normal;
-  `,
+      display: inline-block;
+      margin-left: .5rem;
+      font-weight: normal;
+    `,
 
     fieldset: `
-  padding: 0;
-  border-width: 0;
-  `,
+      padding: 0;
+      border-width: 0;
+    `,
 
     checkbox: `
-  display: inline
-`,
+      display: inline
+    `,
+
     radio: `
-  display: inline
-`
+      display: inline
+    `
   })
 
   Forms.add({
     textarea: [
       Forms.input,
       `
-    min-height: 65px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-    `
+        min-height: 65px;
+        padding-top: 6px;
+        padding-bottom: 6px;
+      `
     ]
   })
 
   const Layout = cmz('Layout', {
     clearSelf: `
-&:after {
-  content: "";
-  display: table;
-  clear: both;
-}
-  `
+      &:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+    `
   })
 
   Layout.add({
     container: [
       `
-    position: relative;
-    width: 100%;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 20px;
-    box-sizing: border-box;
-    `,
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 20px;
+      box-sizing: border-box;
+      `,
       atMedia(400, `
-      width: 85%;
-      padding: 0
-    `),
+        width: 85%;
+        padding: 0
+      `),
       atMedia(550, `
-      width: 80%;
-    `),
+        width: 80%;
+      `),
       Layout.clearSelf
     ],
 
@@ -932,14 +929,14 @@ module.exports = function (colors) {
       Layout.fullWidth,
       'float: left',
       atMedia(550, `
-& {
-  margin-left: 4%;
-}
+        & {
+          margin-left: 4%;
+        }
 
-&:first-child {
-  margin-left: 0;
-}
-`)
+        &:first-child {
+          margin-left: 0;
+        }
+        `)
     ]
   })
 
@@ -959,4 +956,4 @@ module.exports = function (colors) {
   }
 }
 
-},{"./at-media":14,"cmz":1}]},{},[5]);
+},{"./at-media":11,"cmz":6}]},{},[2]);
