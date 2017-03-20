@@ -6,6 +6,7 @@
   "scripts": {
     "prebuild:example": "mkdir -p dist && cp example/index.html dist/",
     "build:example": "monobrow -c example/monobrow.js",
+    "build:umd": "browserify --standalone zkeleton -o dist/zkeleton.js src/custom.js",
     "test": "npm run build:example",
     "gh-pages": "npm run build:example && gh-pages -d dist -m \"Updates --skip-ci\""
   },

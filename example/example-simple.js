@@ -33,7 +33,7 @@ el.innerHTML = `
     </div>
 
     <label class="${Forms.label}">Message</label>
-    <textarea class="${Forms.input} ${Layout.fullWidth}" placeholder="Hi Dave..."></textarea>
+    <textarea class="${Forms.textarea} ${Layout.fullWidth}" placeholder="Hi Dave..."></textarea>
 
     <button class="${Buttons.primary}">Submit</button>
   </form>

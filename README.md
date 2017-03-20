@@ -14,6 +14,8 @@ open dist/index.html
 
 You can also [view the example here](https://joshwnj.github.io/zkeleton/)
 
+Or [try it out on codepen](https://codepen.io/joshwnj/pen/ryJqaO?editors=0010)
+
 ## Theming
 
 To get default colors, just use:
